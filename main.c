@@ -26,7 +26,7 @@ int main2(int argc, char *argv[])  {
 
 
 
-int main(int argc, char *argv[]) {
+int mainMaim(int argc, char *argv[]) {
     char *file = argv[1];
     if (argc > 1) {
         printf("Arguments:\n");
