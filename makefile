@@ -1,5 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -ansi -pedantic
+CFLAGS = -Wall -ansi -pedantic -g
+DEBUG = -g
 OBJ = main.o #bounds.o
 EXEC = myProgram
 
