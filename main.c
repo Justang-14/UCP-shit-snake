@@ -1,9 +1,103 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "main.h"
+#include "linkedList.h"
+#include "terminal.h"
 
+int buildGame(struct State *state, FILE *f, int rows, int cols, int **wallLocs, int walls) {
+    char *line = (char*) malloc(2 * cols * sizeof(char));
+    char x;
+    int i, j;
+    int count = 0;
 
+    for (i = 0; i < rows; i++) {
+        fgets(line, 2*cols+2, f);
+        /*printf("%s\n", line);*/
+        for (j = 0; j < cols; j++) {
+            x = line[2*j];
+            switch (x)
+            {
+            case '1':
+                /*
+                **(wallLocs+count) = j;
+                *(*(wallLocs+count) + 1) = i;
+                */
+                wallLocs[count][0] = j;
+                wallLocs[count][1] = i;
 
+                count++;
+                break;
+
+            case '2':
+                state->lantern.x = j;
+                state->lantern.y = i;
+                break;
+
+            case '3':
+                state->player.x = j;
+                state->player.y = i;
+                break;
+
+            case '4':
+                state->snake.x = j;
+                state->snake.y = i;
+                break;
+
+            case '5':
+                state->treasure.x = j;
+                state->treasure.y = i;
+                break;
+            
+            default:
+
+                break;
+            }            
+        }
+    }
+    return 0;
+}
+
+bool checkWall(int** wallArray, int size, int x, int y) {
+    bool yesWall = false;
+    int i;
+    for(i = 0; i < size; i++) {
+        if(x == wallArray[i][0] && y == wallArray[i][1]) {
+            yesWall  = true;
+        }
+    }
+    return yesWall;
+}
+
+void displayMap(int** wallLocs, int walls, int cols, int rows) {
+    int i, j;
+    for (i = 0; i < cols + 2; i++)
+        {
+            printf("*");
+        }
+        printf("\n");
+        
+        for (i = 0; i < rows + 2; i++)
+        {
+            printf("*");
+            for (j = 0; j < cols; j++)
+            {
+                if (checkWall(wallLocs, walls, j, i))
+                {
+                    printf("O");
+                }
+                else {
+                    printf(" ");
+                }
+            }
+            printf("*\n");
+        }
+        
+        for (i = 0; i < cols + 2; i++)
+        {
+            printf("*");
+        }
+        printf("\n");
+}
 
 /*
 int main2(int argc, char *argv[])  {
@@ -26,7 +120,7 @@ int main2(int argc, char *argv[])  {
 
 
 
-int mainMaim(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
     char *file = argv[1];
     if (argc > 1) {
         printf("Arguments:\n");
@@ -40,9 +134,9 @@ int mainMaim(int argc, char *argv[]) {
 
     char dimentions[6];
     int cols, rows, walls;
-    struct State state;
-    state.gameOver = true;
-    int i;
+    State* state = (State*)malloc(sizeof(State));
+    state->gameOver = true;
+    int i, j;
 
     FILE *f;
     f = fopen(file, "r");
@@ -65,19 +159,29 @@ int mainMaim(int argc, char *argv[]) {
         for (i = 0; i < walls; i++)
         {
             wallLocs[i] = (int*) malloc(2 * sizeof(int));
-        }
-        printf("%d\n", wallLocs == NULL);
-        
+        }        
 
-        printf("r%d, c%d\n", rows, cols);
+        /*printf("r%d, c%d\n", rows, cols);*/
         fgetc(f);
-        buildGame(&state, f, rows, cols, wallLocs, walls);/*display game based off state*/
-        printf("wallLocs[0][0,1] = [%d, %d]\n", wallLocs[0][0],wallLocs[0][1]);
+        buildGame(state, f, rows, cols, wallLocs, walls);/*display game based off state*/
 
-        for (i = 0; i < walls; i++)
+        LinkedList* list;
+        list = (LinkedList*)malloc(sizeof(LinkedList));
+        list->head = NULL;
+        list->count = 0;
+
+        insertFirst(list, state);
+        listNode* nd = removeFirst(list);
+        printf("%d\n", ((State*)nd->value)->player.y);/*keep going to get x coor, just for testing*/
+
+        while (true)
         {
-            printf("%d, %d\n", wallLocs[i][0],wallLocs[i][1]);
+            char input;
+            displayMap(wallLocs, walls, cols, rows);
+            
+            
         }
+        
 
     }
     

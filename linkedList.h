@@ -1,6 +1,25 @@
 /*keep private structs over in the c file, but declare them here for the functions*/
 #ifndef LINKEDLIST
-struct listNode;
+#include <stdlib.h>
+
+typedef struct listNode 
+{
+        void* value;
+        struct listNode* next;
+}listNode;
+
+
+typedef struct LinkedList
+{
+    listNode* head;
+    int count;
+
+} LinkedList;
+
+int getValueInt(listNode* node);
+void insertFirst(LinkedList* list, void* value);
+listNode *removeFirst(LinkedList* list);
+
 
 #define LINKEDLIST
 #endif

@@ -1,21 +1,9 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "linkedList.h"
 
 
-typedef struct listNode
-{
-        void* value;
-        struct listNode* next;
-
-}listNode;
-
-typedef struct LinkedList
-{
-    listNode* head;
-
-
-} LinkedList;
 
 int getValueInt(listNode* node) {
     return *((int*)node->value);
@@ -26,19 +14,30 @@ void insertFirst(LinkedList* list, void* value) {
     newNd->value = value;
     newNd->next = list->head;
     list->head = newNd;
+    list->count++;
 }
 
-int main(int argc, char const *argv[])
+listNode *removeFirst(LinkedList* list) {
+    listNode* exNd = list->head;
+    list->head = list->head->next;
+    return exNd;
+    list->count++;
+    return exNd;
+}
+
+int mainOff(int argc, char const *argv[])
 {
     LinkedList* list;
     list = (LinkedList*)malloc(sizeof(LinkedList));
     list->head = NULL;
+    list->count = 0;
 
     printf("here\n");
 
     int x = 21;
     insertFirst(list, &x);
     printf("%d\n", getValueInt(list->head));
+    printf("%d\n", getValueInt(removeFirst(list)));
     
 
     return 0;

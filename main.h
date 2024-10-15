@@ -6,67 +6,28 @@ struct Position {
     int y;
 };
 
-struct State {
+typedef struct State {
     struct Position player;
     struct Position snake;
     struct Position lantern;
     struct Position treasure;
     bool hasLantern;
     bool gameOver;
-};
+}State;
 
-int buildGame(struct State *state, FILE *f, int rows, int cols, int **wallLocs, int walls) {
-    char *line = (char*) malloc(2 * cols * sizeof(char));
-    char x;
-    int i, j;
-    int count = 0;
+int buildGame(struct State *state, FILE *f, int rows, int cols, int **wallLocs, int walls);
+bool checkWall(int** wallArray, int size, int x, int y);
+void displayMap(int** wallLocs, int walls, int cols, int rows);
 
-    for (i = 0; i < rows; i++) {
-        fgets(line, 2*cols+2, f);
-        printf("%s\n", line);
-        for (j = 0; j < cols; j++) {
-            x = line[2*j];
-            switch (x)
-            {
-            case '1':
-                /*
-                **(wallLocs+count) = j;
-                *(*(wallLocs+count) + 1) = i;
-                */
-                wallLocs[count][0] = j;
-                wallLocs[count][1] = i;
+/*Snippets
 
-                count++;
-                break;
-
-            case '2':
-                state->lantern.x = j;
-                state->lantern.y = i;
-                break;
-
-            case '3':
-                state->player.x = j;
-                state->player.y = i;
-                break;
-
-            case '4':
-                state->snake.x = j;
-                state->snake.y = i;
-                break;
-
-            case '5':
-                state->treasure.x = j;
-                state->treasure.y = i;
-                break;
-            
-            default:
-
-                break;
-            }            
+for (i = 0; i < walls; i++)
+        {
+            printf("%d, %d\n", wallLocs[i][0],wallLocs[i][1]);
         }
-    }
-    return 0;
-}
+
+
+*/
 
 #define MAIN
 #endif
