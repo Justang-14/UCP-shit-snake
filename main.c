@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "main.h"
 #include "linkedList.h"
 #include "terminal.h"
+#include "random.h"
 
-int buildGame(struct State *state, FILE *f, int rows, int cols, int **wallLocs, int walls) {
+int buildGame(GameState *state, FILE *f, int rows, int cols, int **wallLocs, int walls) {
     char *line = (char*) malloc(2 * cols * sizeof(char));
     char x;
     int i, j;
@@ -57,6 +59,30 @@ int buildGame(struct State *state, FILE *f, int rows, int cols, int **wallLocs, 
     return 0;
 }
 
+void checkItems(GameState* state, int x, int y) {
+    if (state->lantern.x == x && state->lantern.y == y)
+    {
+        state->hasLantern = true;
+    }
+    if (state->treasure.x == x && state->treasure.y == y)
+    {
+        state->gameOver = true;
+    }
+}
+
+bool checkBounds(int x, int y, int cols, int rows) {
+    bool hit = false;
+    if (x < 0 || x >= cols)
+    {
+        hit = true;
+    }
+    else if (y < 0 || y >= cols)
+    {
+        hit = true;
+    }
+    return hit;
+}
+
 bool checkWall(int** wallArray, int size, int x, int y) {
     bool yesWall = false;
     int i;
@@ -68,7 +94,7 @@ bool checkWall(int** wallArray, int size, int x, int y) {
     return yesWall;
 }
 
-void displayMap(int** wallLocs, int walls, int cols, int rows) {
+void displayMap(GameState* state, int** wallLocs, int walls, int cols, int rows) {
     int i, j;
     for (i = 0; i < cols + 2; i++)
         {
@@ -84,6 +110,22 @@ void displayMap(int** wallLocs, int walls, int cols, int rows) {
                 if (checkWall(wallLocs, walls, j, i))
                 {
                     printf("O");
+                }
+                else if (state->player.x == j && state->player.y == i)
+                {
+                    printf("P");
+                }
+                else if (state->snake.x == j && state->snake.y == i)
+                {
+                    printf("~");
+                }
+                else if (state->lantern.x == j && state->lantern.y == i)
+                {
+                    printf("@");
+                }
+                else if (state->treasure.x == j && state->treasure.y == i)
+                {
+                    printf("$");
                 }
                 else {
                     printf(" ");
@@ -134,8 +176,8 @@ int main(int argc, char *argv[]) {
 
     char dimentions[6];
     int cols, rows, walls;
-    State* state = (State*)malloc(sizeof(State));
-    state->gameOver = true;
+    GameState* state = (GameState*)malloc(sizeof(GameState));
+    state->gameOver = false;
     int i, j;
 
     FILE *f;
@@ -171,15 +213,56 @@ int main(int argc, char *argv[]) {
         list->count = 0;
 
         insertFirst(list, state);
-        listNode* nd = removeFirst(list);
-        printf("%d\n", ((State*)nd->value)->player.y);/*keep going to get x coor, just for testing*/
+        
 
         while (true)
         {
+            int newX = state->player.x;
+            int newY = state->player.y;
+            bool collision = false;
+            
             char input;
-            displayMap(wallLocs, walls, cols, rows);
+            displayMap(state, wallLocs, walls, cols, rows);
+            disableBuffer();
+            scanf(" %c", &input);
+            enableBuffer;
             
+            switch (input)
+            {
+            case 'w':
+                newY--;
+                collision = checkWall(wallLocs, walls, newX, newY) || checkBounds(newX, newY, cols, rows);
+                break;
             
+            case 'a':
+                newX--;
+                collision = checkWall(wallLocs, walls, newX, newY) || checkBounds(newX, newY, cols, rows);
+                break;
+
+            case 's':
+                newY++;
+                collision = checkWall(wallLocs, walls, newX, newY) || checkBounds(newX, newY, cols, rows);
+                break;
+
+            case 'd':
+                newX++;
+                collision = checkWall(wallLocs, walls, newX, newY) || checkBounds(newX, newY, cols, rows);
+                break;
+            
+            default:
+                break;
+            }
+            
+            if (!collision)
+            {
+                GameState* newState = (GameState*)malloc(sizeof(GameState));
+                memcpy(newState, state, sizeof(GameState));
+                newState->player.x = newX;
+                newState->player.y = newY;
+                checkItems(newState, newX, newY);
+                insertFirst(list, newState);
+                state = newState;
+            }
         }
         
 

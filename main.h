@@ -1,23 +1,25 @@
 #ifndef MAIN
 typedef enum {false, true}  bool;
 
-struct Position {
+typedef struct Position {
     int x;
     int y;
-};
+}Position;
 
-typedef struct State {
-    struct Position player;
-    struct Position snake;
-    struct Position lantern;
-    struct Position treasure;
+typedef struct GameState {
+    Position player;
+    Position snake;
+    Position lantern;
+    Position treasure;
     bool hasLantern;
     bool gameOver;
-}State;
+}GameState;
 
-int buildGame(struct State *state, FILE *f, int rows, int cols, int **wallLocs, int walls);
+void checkItems(GameState* state, int x, int y);
+bool checkBounds(int x, int y, int cols, int rows);
+int buildGame(struct GameState *state, FILE *f, int rows, int cols, int **wallLocs, int walls);
 bool checkWall(int** wallArray, int size, int x, int y);
-void displayMap(int** wallLocs, int walls, int cols, int rows);
+void displayMap(GameState* state, int** wallLocs, int walls, int cols, int rows);
 
 /*Snippets
 

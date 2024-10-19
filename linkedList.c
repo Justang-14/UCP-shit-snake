@@ -9,6 +9,15 @@ int getValueInt(listNode* node) {
     return *((int*)node->value);
 }
 
+int isEmpty(LinkedList* list) {
+    int value = 0;
+    if (list->count = 0)
+    {
+        value = 1;
+    }
+    return value;
+}
+
 void insertFirst(LinkedList* list, void* value) {
     listNode* newNd = (listNode*)malloc(sizeof(listNode));
     newNd->value = value;
