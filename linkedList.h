@@ -19,6 +19,7 @@ typedef struct LinkedList
 int getValueInt(listNode* node);
 void insertFirst(LinkedList* list, void* value);
 listNode *removeFirst(LinkedList* list);
+int isEmpty(LinkedList* list);
 
 
 #define LINKEDLIST

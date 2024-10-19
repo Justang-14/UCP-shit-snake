@@ -76,7 +76,7 @@ bool checkBounds(int x, int y, int cols, int rows) {
     {
         hit = true;
     }
-    else if (y < 0 || y >= cols)
+    else if (y < 0 || y >= rows)
     {
         hit = true;
     }
@@ -95,74 +95,64 @@ bool checkWall(int** wallArray, int size, int x, int y) {
 }
 
 void displayMap(GameState* state, int** wallLocs, int walls, int cols, int rows) {
+    system("clear");
     int i, j;
     for (i = 0; i < cols + 2; i++)
+    {
+        printf("*");
+    }
+    printf("\n");
+    
+    for (i = 0; i < rows; i++)
+    {
+        printf("*");
+        for (j = 0; j < cols; j++)
         {
-            printf("*");
-        }
-        printf("\n");
-        
-        for (i = 0; i < rows + 2; i++)
-        {
-            printf("*");
-            for (j = 0; j < cols; j++)
+            if (checkWall(wallLocs, walls, j, i))
             {
-                if (checkWall(wallLocs, walls, j, i))
-                {
-                    printf("O");
-                }
-                else if (state->player.x == j && state->player.y == i)
-                {
-                    printf("P");
-                }
-                else if (state->snake.x == j && state->snake.y == i)
-                {
-                    printf("~");
-                }
-                else if (state->lantern.x == j && state->lantern.y == i)
-                {
-                    printf("@");
-                }
-                else if (state->treasure.x == j && state->treasure.y == i)
-                {
-                    printf("$");
-                }
-                else {
-                    printf(" ");
-                }
+                printf("O");
             }
-            printf("*\n");
+            else if (state->snake.x == j && state->snake.y == i)
+            {
+                printf("~");
+            }
+            else if (state->player.x == j && state->player.y == i)
+            {
+                printf("P");
+            }
+            else if (state->lantern.x == j && state->lantern.y == i && !state->hasLantern)
+            {
+                printf("@");
+            }
+            else if (state->treasure.x == j && state->treasure.y == i)
+            {
+                printf("$");
+            }
+            else {
+                printf(" ");
+            }
         }
-        
-        for (i = 0; i < cols + 2; i++)
-        {
-            printf("*");
-        }
-        printf("\n");
+        printf("*\n");
+    }
+    
+    for (i = 0; i < cols + 2; i++)
+    {
+        printf("*");
+    }
+    printf("\n");
+    printf("Press 'a' to move up\n");
+    printf("Press 's' to move down\n");
+    printf("Press 'a' to move left\n");
+    printf("Press 'd' to move right\n");
+    printf("Press 'u' to undo\n");
 }
-
-/*
-int main2(int argc, char *argv[])  {
-    readGameFile();
-    struct state = makeState();
-    char[] history;
-
-
-}*/
-
-
-/*The strat is to store location for walls, player, snake, lantern, treasure */
-
-/*void* doshit(int cols, int rows) {
-    int map[cols][rows];//malloc this shit, maybe as a struct for state|no state should be like git
-    fgets(line, 30, fp)
-}*/
 
 
 
 
 
 int main(int argc, char *argv[]) {
+    initRandom();
     char *file = argv[1];
     if (argc > 1) {
         printf("Arguments:\n");
@@ -215,54 +205,108 @@ int main(int argc, char *argv[]) {
         insertFirst(list, state);
         
 
-        while (true)
+        while (!(state->gameOver))
         {
-            int newX = state->player.x;
-            int newY = state->player.y;
-            bool collision = false;
-            
+            int newX;
+            int newY;
+            bool collision = true;
             char input;
             displayMap(state, wallLocs, walls, cols, rows);
-            disableBuffer();
-            scanf(" %c", &input);
-            enableBuffer;
             
-            switch (input)
+            while (collision)
             {
-            case 'w':
-                newY--;
-                collision = checkWall(wallLocs, walls, newX, newY) || checkBounds(newX, newY, cols, rows);
-                break;
-            
-            case 'a':
-                newX--;
-                collision = checkWall(wallLocs, walls, newX, newY) || checkBounds(newX, newY, cols, rows);
-                break;
+                newX = state->player.x;
+                newY = state->player.y;
+                collision = false;
+                disableBuffer();
+                scanf(" %c", &input);
+                enableBuffer();
+                
+                switch (input)
+                {
+                case 'w':
+                    newY--;
+                    collision = checkWall(wallLocs, walls, newX, newY) || checkBounds(newX, newY, cols, rows);
+                    break;
+                
+                case 'a':
+                    newX--;
+                    collision = checkWall(wallLocs, walls, newX, newY) || checkBounds(newX, newY, cols, rows);
+                    break;
 
-            case 's':
-                newY++;
-                collision = checkWall(wallLocs, walls, newX, newY) || checkBounds(newX, newY, cols, rows);
-                break;
+                case 's':
+                    newY++;
+                    collision = checkWall(wallLocs, walls, newX, newY) || checkBounds(newX, newY, cols, rows);
+                    break;
 
-            case 'd':
-                newX++;
-                collision = checkWall(wallLocs, walls, newX, newY) || checkBounds(newX, newY, cols, rows);
-                break;
-            
-            default:
-                break;
+                case 'd':
+                    newX++;
+                    collision = checkWall(wallLocs, walls, newX, newY) || checkBounds(newX, newY, cols, rows);
+                    break;
+
+                case 'u':
+                    printf("%d\n", list->count);
+                    if (!isEmpty(list))
+                    {
+                        state = (GameState*)removeFirst(list)->value;
+                    }
+                    break;
+                
+                default:
+                    break;
+                }
             }
             
-            if (!collision)
+            if  (input != 'u')
             {
                 GameState* newState = (GameState*)malloc(sizeof(GameState));
                 memcpy(newState, state, sizeof(GameState));
                 newState->player.x = newX;
                 newState->player.y = newY;
                 checkItems(newState, newX, newY);
-                insertFirst(list, newState);
+                
+                int slitherX = 0;
+                int slitherY = 0;
+                int snakeX;
+                int snakeY;
+                collision = true;
+                while ((slitherX == 0 && slitherY == 0) || collision)
+                {
+                    snakeX = newState->snake.x;
+                    snakeY = newState->snake.y;
+                    if (abs(snakeX-state->player.x) <= 1 && abs(snakeY-state->player.y) <= 1)
+                    {
+                        snakeX = newState->player.x;
+                        snakeY = newState->player.y;
+                        slitherX = 1;
+                        collision = false;
+                        newState->gameOver = true;
+                    }
+                    else
+                    {
+                        slitherX = randomUCP(-1, 1);
+                        slitherY = randomUCP(-1, 1);
+                        snakeX += slitherX;
+                        snakeY += slitherY;
+                        collision = checkWall(wallLocs, walls, snakeX, snakeY) || checkBounds(snakeX, snakeY, cols, rows);
+                    }
+                }
+                newState->snake.x = snakeX;
+                newState->snake.y = snakeY;
+                
                 state = newState;
+                insertFirst(list, newState);
             }
+            
+        }
+        displayMap(state, wallLocs, walls, cols, rows);
+        if (state->player.x == state->treasure.x && state->player.y == state->treasure.y)
+        {
+            printf("\n\n\nCongratulations, you won!\n\n\n");
+        }
+        else
+        {
+            printf("You lost, better luck next time\n\n\n");
         }
         
 

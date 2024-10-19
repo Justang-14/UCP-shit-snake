@@ -11,7 +11,7 @@ int getValueInt(listNode* node) {
 
 int isEmpty(LinkedList* list) {
     int value = 0;
-    if (list->count = 0)
+    if (list->count == 0)
     {
         value = 1;
     }
@@ -29,8 +29,7 @@ void insertFirst(LinkedList* list, void* value) {
 listNode *removeFirst(LinkedList* list) {
     listNode* exNd = list->head;
     list->head = list->head->next;
-    return exNd;
-    list->count++;
+    list->count--;
     return exNd;
 }
 
