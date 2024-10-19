@@ -4,6 +4,10 @@ DEBUG = -g
 OBJ = main.o linkedList.o terminal.o random.o
 EXEC = myProgram
 
+ifeq ($(DARK), 1)
+    CFLAGS += -DDARK
+endif
+
 $(EXEC) : $(OBJ)
 	$(CC) $(OBJ) -o $(EXEC)
 
@@ -18,3 +22,6 @@ terminal.o: terminal.c terminal.h
 
 random.o: random.c random.h
 	$(CC) $(CFLAGS) random.c -c
+
+clean:
+	rm -f *.o myProgram

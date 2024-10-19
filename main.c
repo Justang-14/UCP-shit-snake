@@ -94,6 +94,73 @@ bool checkWall(int** wallArray, int size, int x, int y) {
     return yesWall;
 }
 
+#ifdef DARK
+void displayMap(GameState* state, int** wallLocs, int walls, int cols, int rows) {
+    system("clear");
+    int sight = 3;
+    if (state->hasLantern) {
+        sight = 6;
+    }
+    int i, j;
+    for (i = 0; i < cols + 2; i++)
+    {
+        printf("*");
+    }
+    printf("\n");
+    
+    for (i = 0; i < rows; i++)
+    {
+        printf("*");
+        for (j = 0; j < cols; j++)
+        {
+            if ((abs(j-state->player.x) + abs(i-state->player.y)) <= sight)
+            {
+                if (checkWall(wallLocs, walls, j, i))
+                {
+                    printf("O");
+                }
+                else if (state->snake.x == j && state->snake.y == i)
+                {
+                    printf("~");
+                }
+                else if (state->player.x == j && state->player.y == i)
+                {
+                    printf("P");
+                }
+                else if (state->lantern.x == j && state->lantern.y == i && !state->hasLantern)
+                {
+                    printf("@");
+                }
+                else if (state->treasure.x == j && state->treasure.y == i)
+                {
+                    printf("$");
+                }
+                else {
+                    printf(".");
+                }
+            }
+            else
+            {
+                printf(" ");
+            }
+        }
+        printf("*\n");
+    }
+    
+    for (i = 0; i < cols + 2; i++)
+    {
+        printf("*");
+    }
+    printf("\n");
+    printf("Press 'a' to move up\n");
+    printf("Press 's' to move down\n");
+    printf("Press 'a' to move left\n");
+    printf("Press 'd' to move right\n");
+    printf("Press 'u' to undo\n");
+}
+#endif
+
+#ifndef DARK
 void displayMap(GameState* state, int** wallLocs, int walls, int cols, int rows) {
     system("clear");
     int i, j;
@@ -146,8 +213,7 @@ void displayMap(GameState* state, int** wallLocs, int walls, int cols, int rows)
     printf("Press 'd' to move right\n");
     printf("Press 'u' to undo\n");
 }
-
-
+#endif
 
 
 
