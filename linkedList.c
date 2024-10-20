@@ -4,11 +4,6 @@
 #include "linkedList.h"
 
 
-
-int getValueInt(listNode* node) {
-    return *((int*)node->value);
-}
-
 int isEmpty(LinkedList* list) {
     int value = 0;
     if (list->count == 0)
@@ -32,22 +27,3 @@ listNode *removeFirst(LinkedList* list) {
     list->count--;
     return exNd;
 }
-
-int mainOff(int argc, char const *argv[])
-{
-    LinkedList* list;
-    list = (LinkedList*)malloc(sizeof(LinkedList));
-    list->head = NULL;
-    list->count = 0;
-
-    printf("here\n");
-
-    int x = 21;
-    insertFirst(list, &x);
-    printf("%d\n", getValueInt(list->head));
-    printf("%d\n", getValueInt(removeFirst(list)));
-    
-
-    return 0;
-}
-

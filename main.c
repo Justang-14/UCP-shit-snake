@@ -6,6 +6,7 @@
 #include "terminal.h"
 #include "random.h"
 
+/*parse map data and save it in proper locations*/
 int buildGame(GameState *state, FILE *f, int rows, int cols, int **wallLocs, int walls) {
     char *line = (char*) malloc(2 * cols * sizeof(char));
     char x;
@@ -14,16 +15,12 @@ int buildGame(GameState *state, FILE *f, int rows, int cols, int **wallLocs, int
 
     for (i = 0; i < rows; i++) {
         fgets(line, 2*cols+2, f);
-        /*printf("%s\n", line);*/
         for (j = 0; j < cols; j++) {
             x = line[2*j];
+            /*assign based on number code*/
             switch (x)
             {
             case '1':
-                /*
-                **(wallLocs+count) = j;
-                *(*(wallLocs+count) + 1) = i;
-                */
                 wallLocs[count][0] = j;
                 wallLocs[count][1] = i;
 
@@ -60,6 +57,7 @@ int buildGame(GameState *state, FILE *f, int rows, int cols, int **wallLocs, int
     return 0;
 }
 
+/*check if ther is an item on a space*/
 void checkItems(GameState* state, int x, int y) {
     if (state->lantern.x == x && state->lantern.y == y)
     {
@@ -71,6 +69,7 @@ void checkItems(GameState* state, int x, int y) {
     }
 }
 
+/*check if in-coord are outside the bounds*/
 bool checkBounds(int x, int y, int cols, int rows) {
     bool hit = false;
     if (x < 0 || x >= cols)
@@ -84,6 +83,7 @@ bool checkBounds(int x, int y, int cols, int rows) {
     return hit;
 }
 
+/*checks if there is a wall at a space*/
 bool checkWall(int** wallArray, int size, int x, int y) {
     bool yesWall = false;
     int i;
@@ -95,9 +95,11 @@ bool checkWall(int** wallArray, int size, int x, int y) {
     return yesWall;
 }
 
+/*when playing fog of war this function will diplay the game*/
 #ifdef DARK
 void displayMap(GameState* state, int** wallLocs, int walls, int cols, int rows) {
     system("clear");
+    /*determine the default sight and change it if player has lantern*/
     int sight = 3;
     if (state->hasLantern) {
         sight = 6;
@@ -114,6 +116,7 @@ void displayMap(GameState* state, int** wallLocs, int walls, int cols, int rows)
         printf("*");
         for (j = 0; j < cols; j++)
         {
+            /*determine if player can see the space*/
             if ((abs(j-state->player.x) + abs(i-state->player.y)) <= sight)
             {
                 if (checkWall(wallLocs, walls, j, i))
@@ -161,6 +164,7 @@ void displayMap(GameState* state, int** wallLocs, int walls, int cols, int rows)
 }
 #endif
 
+/*if playing easy mode this will display the game*/
 #ifndef DARK
 void displayMap(GameState* state, int** wallLocs, int walls, int cols, int rows) {
     system("clear");
@@ -228,9 +232,10 @@ int main(int argc, char *argv[]) {
         
     }
     else {
-        printf("Handle exit\n");
+        printf("Must be run with argument <file.txt>\n");
     }
 
+    /*init necessary variables*/
     char dimentions[6];
     int cols, rows, walls;
     GameState* state = (GameState*)malloc(sizeof(GameState));
@@ -241,28 +246,25 @@ int main(int argc, char *argv[]) {
     f = fopen(file, "r");
     if (f == NULL)
     {
-        printf("here\n");
         printf("Error: could not open '%s'\n", file);
     }
     else
     {
-        /*dimentions are stored inline: 15 20*/
+        /*grab precursor data and consume newlines*/
         fscanf(f, "%d %d", &rows, &cols);
         fgetc(f);
         fscanf(f, "%d", &walls);
         fgetc(f);
-        printf("%d\n", walls);
-
         
         int **wallLocs = (int**) malloc(walls * sizeof(int*));
         for (i = 0; i < walls; i++)
         {
             wallLocs[i] = (int*) malloc(2 * sizeof(int));
         }        
-
-        /*printf("r%d, c%d\n", rows, cols);*/
-        fgetc(f);
-        buildGame(state, f, rows, cols, wallLocs, walls);/*display game based off state*/
+        
+        /*fgetc(f); ########################uncomment for windows##################################*/
+        /*init game*/
+        buildGame(state, f, rows, cols, wallLocs, walls);
         fclose(f);
 
         LinkedList* list;
@@ -284,6 +286,7 @@ int main(int argc, char *argv[]) {
             
             while (collision)
             {
+                /*read input*/
                 newX = state->player.x;
                 newY = state->player.y;
                 collision = false;
@@ -291,6 +294,7 @@ int main(int argc, char *argv[]) {
                 scanf(" %c", &input);
                 enableBuffer();
                 
+                /*change player position and check for collisions*/
                 switch (input)
                 {
                 case 'w':
@@ -313,6 +317,7 @@ int main(int argc, char *argv[]) {
                     collision = checkWall(wallLocs, walls, newX, newY) || checkBounds(newX, newY, cols, rows);
                     break;
 
+                    /*checks for undo case and removes node from list*/
                 case 'u':
                     printf("%d\n", list->count);
                     if (!isEmpty(list))
@@ -330,10 +335,13 @@ int main(int argc, char *argv[]) {
                 }
             }
             
+            /*carrry out normal functionality if not undo*/
             if  (input != 'u')
             {
+                /*here we store the pre-move state as it should be saved now*/
                 insertFirst(list, state);
                 GameState* newState = (GameState*)malloc(sizeof(GameState));
+                /*copy current state to update with moves*/
                 memcpy(newState, state, sizeof(GameState));
                 newState->player.x = newX;
                 newState->player.y = newY;
@@ -343,11 +351,13 @@ int main(int argc, char *argv[]) {
                 int slitherY = 0;
                 int snakeX;
                 int snakeY;
+                /*do snake movement*/
                 collision = true;
                 while ((slitherX == 0 && slitherY == 0) || collision)
                 {
                     snakeX = newState->snake.x;
                     snakeY = newState->snake.y;
+                    /*check snake bite*/
                     if (abs(snakeX-state->player.x) <= 1 && abs(snakeY-state->player.y) <= 1)
                     {
                         snakeX = newState->player.x;
@@ -367,13 +377,14 @@ int main(int argc, char *argv[]) {
                 }
                 newState->snake.x = snakeX;
                 newState->snake.y = snakeY;
-                
+                /*update current state pointer*/
                 state = newState;
                 
             }
             
         }
         displayMap(state, wallLocs, walls, cols, rows);
+        /*determine outcome*/
         if (state->player.x == state->treasure.x && state->player.y == state->treasure.y)
         {
             printf("\n\n\nCongratulations, you won!\n\n\n");
@@ -383,6 +394,7 @@ int main(int argc, char *argv[]) {
             printf("You lost, better luck next time\n\n\n");
         }
 
+        /*free memory*/
         free(state);
         while (!isEmpty(list))
         {
@@ -397,16 +409,6 @@ int main(int argc, char *argv[]) {
             free(wallLocs[i]);
         } 
         free(wallLocs);
-        
-        
-
     }
-    
-
-
-
-
-
-
     return 0;
 }
