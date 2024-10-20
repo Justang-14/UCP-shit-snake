@@ -56,6 +56,7 @@ int buildGame(GameState *state, FILE *f, int rows, int cols, int **wallLocs, int
             }            
         }
     }
+    free(line);
     return 0;
 }
 
@@ -262,13 +263,15 @@ int main(int argc, char *argv[]) {
         /*printf("r%d, c%d\n", rows, cols);*/
         fgetc(f);
         buildGame(state, f, rows, cols, wallLocs, walls);/*display game based off state*/
+        fclose(f);
 
         LinkedList* list;
+        listNode* nd;
         list = (LinkedList*)malloc(sizeof(LinkedList));
         list->head = NULL;
         list->count = 0;
 
-        insertFirst(list, state);
+        
         
 
         while (!(state->gameOver))
@@ -314,7 +317,11 @@ int main(int argc, char *argv[]) {
                     printf("%d\n", list->count);
                     if (!isEmpty(list))
                     {
-                        state = (GameState*)removeFirst(list)->value;
+                        nd = (GameState*)removeFirst(list);
+                        free(state);
+                        
+                        state = nd->value;
+                        free(nd);
                     }
                     break;
                 
@@ -325,6 +332,7 @@ int main(int argc, char *argv[]) {
             
             if  (input != 'u')
             {
+                insertFirst(list, state);
                 GameState* newState = (GameState*)malloc(sizeof(GameState));
                 memcpy(newState, state, sizeof(GameState));
                 newState->player.x = newX;
@@ -361,7 +369,7 @@ int main(int argc, char *argv[]) {
                 newState->snake.y = snakeY;
                 
                 state = newState;
-                insertFirst(list, newState);
+                
             }
             
         }
@@ -374,6 +382,22 @@ int main(int argc, char *argv[]) {
         {
             printf("You lost, better luck next time\n\n\n");
         }
+
+        free(state);
+        while (!isEmpty(list))
+        {
+            nd = removeFirst(list);
+            state = nd->value;
+            free(nd);
+            free(state);
+        }
+        free(list);
+        for (i = 0; i < walls; i++)
+        {
+            free(wallLocs[i]);
+        } 
+        free(wallLocs);
+        
         
 
     }
